@@ -3,6 +3,7 @@ package br.com.fatecararas.ldm.productservice.resources;
 import br.com.fatecararas.ldm.productservice.domain.Cambio;
 import br.com.fatecararas.ldm.productservice.domain.entities.Product;
 import br.com.fatecararas.ldm.productservice.domain.repositories.ProductRepository;
+import br.com.fatecararas.ldm.productservice.proxy.CambioProxy;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -25,7 +26,7 @@ public class ProductResource {
     private final ProductRepository repository;
 
     @Autowired
-    private RestTemplate restTemplate;
+    private CambioProxy proxy;
 
     public ProductResource(ProductRepository repository) {
         this.repository = repository;
@@ -104,10 +105,7 @@ public class ProductResource {
 
         Product product = optional.get();
 
-        String url = String.format("http://localhost:8001/cambio-service/%s/BRL/USD",
-                product.getPrice());
-
-        Cambio cambio = restTemplate.getForObject(url, Cambio.class);
+        Cambio cambio = proxy.getCambio(product.getPrice());
         product.setPrice(cambio.getValue());
 
         return ResponseEntity.ok().body(product);
