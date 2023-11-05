@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/microservices/cambio-service/f290_dsm_ldm_microservicos.microservices.cambio-service.iml" filepath="$PROJECT_DIR$/.idea/modules/microservices/cambio-service/f290_dsm_ldm_microservicos.microservices.cambio-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/microservices/cambio-service/f290_dsm_ldm_microservicos.microservices.cambio-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/microservices/cambio-service/f290_dsm_ldm_microservicos.microservices.cambio-service.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/microservices/product-service/f290_dsm_ldm_microservicos.microservices.product-service.iml" filepath="$PROJECT_DIR$/.idea/modules/microservices/product-service/f290_dsm_ldm_microservicos.microservices.product-service.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/microservices/product-service/f290_dsm_ldm_microservicos.microservices.product-service.main.iml" filepath="$PROJECT_DIR$/.idea/modules/microservices/product-service/f290_dsm_ldm_microservicos.microservices.product-service.main.iml" />
+    </modules>
+  </component>
+</project>

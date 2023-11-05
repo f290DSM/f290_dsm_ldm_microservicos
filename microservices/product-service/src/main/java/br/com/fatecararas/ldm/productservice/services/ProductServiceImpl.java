@@ -1,18 +1,20 @@
-package br.com.fatecararas.ldm.productservice.resources;
+package br.com.fatecararas.ldm.productservice.services;
 
+import br.com.fatecararas.api.ProductService;
+import br.com.fatecararas.api.core.dto.Product;
 import br.com.fatecararas.ldm.productservice.domain.Cambio;
-import br.com.fatecararas.ldm.productservice.domain.entities.Product;
+import br.com.fatecararas.ldm.productservice.domain.entities.ProductEntity;
 import br.com.fatecararas.ldm.productservice.domain.repositories.ProductRepository;
 import br.com.fatecararas.ldm.productservice.proxy.CambioProxy;
+import br.com.fatecararas.util.http.exceptions.NotFoundException;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -21,24 +23,26 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/product")
-public class ProductResource {
+public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
 
-    @Autowired
-    private CambioProxy proxy;
+    private final CambioProxy proxy;
+    private final ModelMapper mapper;
 
-    public ProductResource(ProductRepository repository) {
+    public ProductServiceImpl(ProductRepository repository, CambioProxy proxy, ModelMapper mapper) {
         this.repository = repository;
+        this.proxy = proxy;
+        this.mapper = mapper;
     }
 
     @GetMapping("/paginated/all")
-    public ResponseEntity<Page<Product>> getAll(@RequestParam(defaultValue = "0") int page,
-                                                @RequestParam(defaultValue = "100") int size) {
+    public ResponseEntity<Page<ProductEntity>> getAll(@RequestParam(defaultValue = "0") int page,
+                                                      @RequestParam(defaultValue = "100") int size) {
 
         PageRequest pageable = PageRequest.of(page, size, Sort.Direction.ASC, "description");
 
-        Page<Product> products = repository.findAll(pageable);
+        Page<ProductEntity> products = repository.findAll(pageable);
 
         if (products.isEmpty())
             return ResponseEntity
@@ -50,9 +54,9 @@ public class ProductResource {
 
     @PostMapping
     @ResponseStatus(code = HttpStatus.CREATED)
-    public ResponseEntity<Void> create(@RequestBody Product product) {
+    public ResponseEntity<Void> create(@RequestBody ProductEntity productEntity) {
 
-        Product p = repository.save(product);
+        ProductEntity p = repository.save(productEntity);
 
         URI uri = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -64,16 +68,15 @@ public class ProductResource {
     }
 
     @GetMapping("/find/{term}")
-    public List<Product> findByDescription(@PathVariable String term) {
+    public List<ProductEntity> findByDescription(@PathVariable String term) {
         return repository.findByDescriptionContains(term);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable Integer id) {
-        Optional<Product> optional = repository.findById(id);
-        if (optional.isEmpty())
-            return ResponseEntity.notFound().build();
-        return ResponseEntity.ok().body(optional.get());
+    public Product findById(@PathVariable Integer id) throws Exception{
+        Optional<ProductEntity> optional = repository.findById(id);
+        if(optional.isEmpty()) throw new NotFoundException("Product not found. Id: "+id);
+        return mapper.map(optional.get(), Product.class);
     }
 
     @DeleteMapping("/remove/{id}")
@@ -82,33 +85,33 @@ public class ProductResource {
     }
 
     @PutMapping
-    public ResponseEntity<?> update(@Valid @RequestBody Product product) {
-        Optional<Product> optional = repository.findById(product.getId());
+    public ResponseEntity<?> update(@Valid @RequestBody ProductEntity productEntity) {
+        Optional<ProductEntity> optional = repository.findById(productEntity.getId());
 
         if (optional.isEmpty())
             return ResponseEntity.notFound().build();
 
-        Product updatedProduct = optional.get();
-        updatedProduct.setBarcode(product.getBarcode());
-        updatedProduct.setDescription(product.getDescription());
-        updatedProduct.setPrice(product.getPrice());
+        ProductEntity updatedProductEntity = optional.get();
+        updatedProductEntity.setBarcode(productEntity.getBarcode());
+        updatedProductEntity.setDescription(productEntity.getDescription());
+        updatedProductEntity.setPrice(productEntity.getPrice());
 
-        return ResponseEntity.ok().body(updatedProduct);
+        return ResponseEntity.ok().body(updatedProductEntity);
     }
 
     @GetMapping("/export/{barcode}")
     public ResponseEntity<?> findByBarcode(@PathVariable("barcode") String barcode) {
-        Optional<Product> optional = repository.findByBarcode(barcode);
+        Optional<ProductEntity> optional = repository.findByBarcode(barcode);
         if (optional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
-        Product product = optional.get();
+        ProductEntity productEntity = optional.get();
 
-        Cambio cambio = proxy.getCambio(product.getPrice());
-        product.setPrice(cambio.getValue());
+        Cambio cambio = proxy.getCambio(productEntity.getPrice());
+        productEntity.setPrice(cambio.getValue());
 
-        return ResponseEntity.ok().body(product);
+        return ResponseEntity.ok().body(productEntity);
 
     }
 
