@@ -19,3 +19,7 @@ spring:
 cambio-service:
   hgbrasil-key: 90230925
 
+---
+spring.config.activate.on-profile: docker
+server.port: 8080
+
