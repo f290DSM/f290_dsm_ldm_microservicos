@@ -19,3 +19,13 @@ spring:
     url: jdbc:h2:mem:product_db
     user: aluno
     password: segredo
+
+# Configuracaoes do profile Docker
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+
+server:
+  port: 8080
